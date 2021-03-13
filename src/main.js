@@ -2,6 +2,13 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import './plugins/element.js'
+import 'reset-css/less/reset.less'
+import './assets/css/iconfont.css'
+
+import axios from 'axios'
+axios.defaults.baseURL = '/api/'
+Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
 
