@@ -5,6 +5,7 @@ import store from './store'
 import './plugins/element.js'
 import 'reset-css/less/reset.less'
 import './assets/css/iconfont.css'
+import 'assets/css/global.less'
 
 import axios from 'axios'
 
