@@ -39,7 +39,7 @@
 					<el-button size="mini" type="primary" icon="el-icon-edit" @click="editUser(el.row.id)"></el-button>
 					<el-button size="mini" type="danger" icon="el-icon-delete" @click="delUser(el.row.id)"></el-button>
 					<el-tooltip effect="dark" content="设置" placement="top" :enterable="false">
-						<el-button size="mini" type="warning" icon="el-icon-setting"></el-button>
+						<el-button size="mini" type="warning" icon="el-icon-setting" @click="setUser(el.row)"></el-button>
 					</el-tooltip>
 				</template>
 			</el-table-column>
@@ -92,6 +92,27 @@
 				<el-button type="primary" @click="submitEditUser">确 定</el-button>
 			</div>
 		</el-dialog>
+		<!--设置权限弹窗-->
+		<el-dialog title="分配角色" :visible.sync="setUserDialogVisible" @close="closeSetUserDialog">
+			<div>
+				<p class="setUserP">当前用户： {{ userInfo.username }}</p>
+				<p class="setUserP">当前角色： {{ userInfo.role_name }}</p>
+				<p class="setUserP">分配新角色：
+					<el-select v-model="selectRoles" placeholder="请选择">
+						<el-option
+							v-for="item in rolesList"
+							:key="item.id"
+							:label="item.roleName"
+							:value="item.id">
+						</el-option>
+					</el-select>
+				</p>
+			</div>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="setUserDialogVisible = false">取 消</el-button>
+				<el-button type="primary" @click="saveRoleInfo">确 定</el-button>
+			</div>
+		</el-dialog>
 	</div>
 </template>
 
@@ -132,8 +153,12 @@ export default {
 			total: 0,
 			addUserDialogVisible: false,
 			editUserDialogVisible: false,
+			setUserDialogVisible: false,
 			userForm: {},
 			editUserForm: {},
+			userInfo: {},
+			rolesList: [],
+			selectRoles: '',
 			userRules: {
 				username: [
 					{
@@ -274,11 +299,44 @@ export default {
 					message: '已取消删除'
 				})
 			}
+		},
+		async setUser (userInfo) {
+			this.userInfo = userInfo
+			const { data: res } = await this.$http.get(`roles`)
+			if (res.meta.status !== 200) {
+				return this.$message.error(res.meta.msg)
+			}
+			this.rolesList = res.data
+			this.setUserDialogVisible = true
+		},
+		async saveRoleInfo () {
+			if (!this.selectRoles) {
+				return this.$message.error('请选择')
+			}
+			const { data: res } = await this.$http.put(`users/${this.userInfo.id}/role`, {
+				rid: this.selectRoles
+			})
+			if (res.meta.status !== 200) {
+				return this.$message.error(res.meta.msg)
+			}
+			this.selectRoles = ''
+			this.setUserDialogVisible = false
+			this.getUsers()
+			return this.$message({
+				type: 'success',
+				message: '成功!'
+			})
+		},
+		closeSetUserDialog () {
+			this.selectRoles = ''
 		}
 	}
 }
 </script>
 
 <style scoped>
-
+.setUserP {
+	height: 40px;
+	line-height: 40px;
+}
 </style>
